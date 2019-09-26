@@ -2,7 +2,7 @@
 
 <#
 .SYNOPSIS 
-    Huntress Connections Module - Gets current connections using Get-NetTCPConnection
+    Huntress Connections Module.
 
 .NOTES
     Author: Zane Gittins
