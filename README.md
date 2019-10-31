@@ -134,7 +134,7 @@ Example of using a Quarry file:
 * Create a LPI from the huntress_smart_response folder.
 * Import the LPI into LogRhythm. 
 * Encrypt credentials and save to disk, LogRhythm will pass these to Huntress to run scripts on remote hosts. Since LogRhythm runs SmartResponse under the system user it is necessary to generate the secure string as system. Use Psexec from command prompt to do so.
-```
+``` PowerShell
 psexec -s powershell.exe
 read-host -AsSecureString | ConvertFrom-SecureString | Out-File "C:\LogRhythm-Cred.txt"
 ```
