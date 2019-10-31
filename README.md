@@ -15,13 +15,13 @@
         yNNNNN-
 ```
 
-PowerShell tool to help blue teams identify compromised systems. This project is similar, and some features are inspired by [Kansa](https://github.com/davehull/Kansa) as well as SANS FOR508 course.
+PowerShell tool to help blue teams identify compromised systems. This project is similar, and some features are inspired by [Kansa](https://github.com/davehull/Kansa) as well as SANS FOR508 course. One of the differentiators between Huntress and other projects is that Huntress integrates with LogRhythm to provide SOAR capabilities.  
 
 Differences include: 
 
 * Kansa can push binaries to remote systems for analysis, Huntress does not support this feature at this time.
-* Huntress allows for JSON files which allow fine grain tuning of modules.
-* Huntress uses a PowerShell script for data stacking.
+* Huntress has a built in LogRhythm smart response folder. This enables Huntress to be used with LogRhythm for SOAR.
+* Huntress has recieved little community testing or validation. 
 
 ## Requirements
 
@@ -100,17 +100,17 @@ Example of using a Quarry file:
 ## Example Usage
 
 ```PowerShell
-  # Using a quarry file with console output
-  .\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json
+  # Collecting credentials against all hosts in the target group.
+  .\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Module modules\Connections.ps1
+
+  # Collecting active connections for a single host. 
+  .\Huntress.ps1 -TargetHost TargetHostHere -Module modules\Connections.ps1
 
   # Using a quarry file with CSV output
   .\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json -CSV
 
   # Pass credentials obtained from Get-Credential
   .\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json -CSV -Credential $MyCredential
-
-  # Manually running a module
-  .\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Module modules\Connections.ps1
 
  ```
 
@@ -127,3 +127,17 @@ Example of using a Quarry file:
   .\utils\CredentialCommandline.ps1
 
 ```
+
+## Creating and Running a LogRhythm SmartResponse with Huntress
+
+* Clone huntress to C:\Smart-Response\Huntress
+* Create a LPI from the huntress_smart_response folder.
+* Encrypt credentials and save to disk, LogRhythm will pass these to Huntress to run scripts on remote hosts. Since LogRhythm runs SmartResponse under the system user it is necessary to generate the secure string as system. Use Psexec from command prompt to do so.
+```
+psexec -s powershell.exe
+read-host -AsSecureString | ConvertFrom-SecureString | Out-File "C:\LogRhythm-Cred.txt"
+```
+* Data will be saved to C:\Smart-Response\Huntress\results
+
+
+In the future I plan to send this data back to LogRhythm, in addition to / or instead of the CSV output.

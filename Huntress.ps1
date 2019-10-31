@@ -25,11 +25,20 @@
 .PARAMETER TargetGroup
     Group to limit the module to. 
 
+.PARAMETER TargetHost
+    Use a specific host name, does not require a quiver file. Do not use with TargetGroup or Quiver.
+
 .PARAMETER OutputFile 
     If specified will write returned data to output file.
 
 .PARAMETER Credential 
     Pass credential to Huntress.
+
+.PARAMETER CrednetialUsername
+    Username to be used with password retrieved from credential file.
+
+.PARAMETER CredentialFile 
+    File containing credentials stored as a secure string.
 
 .PARAMETER CSV 
     Write output to csv file.
@@ -59,13 +68,16 @@
   #>
 
 param (
-    [Parameter(Mandatory=$true)][string]$Quiver,
+    [Parameter(Mandatory=$false)][string]$Quiver,
     [Parameter(Mandatory=$false)][string]$Quarry,
     [Parameter(Mandatory=$false)][string]$Module,
     [Parameter(Mandatory=$false)][array]$ModuleArguments,
     [Parameter(Mandatory=$false)][string]$TargetGroup,
+    [Parameter(Mandatory=$false)][string]$TargetHost,
     [Parameter(Mandatory=$false)][string]$OutputFile,
     [Parameter(Mandatory=$false)][System.Management.Automation.PSCredential]$Credential,
+    [Parameter(Mandatory=$false)][string]$CredentialUsername,
+    [Parameter(Mandatory=$false)][string]$CredentialFile,
     [Switch]$CSV,
     [Switch]$Stack,
     [Switch]$PrintDebug
@@ -76,8 +88,9 @@ if($PrintDebug) { $ErrorActionPreference = "Continue"}
 else { $ErrorActionPreference = "SilentlyContinue" }
 
 # Setup file to write all errors to when not in debug mode. 
+$global:MyPath     = (Split-Path -Parent $MyInvocation.MyCommand.Definition)
 $global:OutputFile = $OutputFile
-$global:ErrorLog   = ".\results\errorlog.txt"
+$global:ErrorLog   = $global:MyPath + "\results\errorlog.txt"
 if(!(Test-Path $global:ErrorLog)) { New-Item -path $global:ErrorLog -type "file"}
 
 class MachineGroup {
@@ -200,7 +213,7 @@ function ConvertHuntTo-CSV {
         if($CSV -eq $true) {
 
             [string]$Module      = (Split-Path $ModulePath -Leaf).Split(".")[0]
-            [string]$CSVFolder   = ".\results" 
+            [string]$CSVFolder   = $global:MyPath + "\results" 
             [string]$CSVFileName = $Module + "_" + (Get-Date -Format "MM_dd_yyyy_HHtt").ToString()  + ".csv"
             [string]$CSVPath     = ($CSVFolder + "\" + $CSVFileName)
 
@@ -266,7 +279,24 @@ function Get-Hunt {
 
 Write-Banner
 
-$AllGroups = Get-Quiver $Quiver
+$AllGroups = @() 
+
+if($PSBoundParameters.ContainsKey('Quiver') -eq $true -and $Quiver -ne "" -and $Quiver -ne $null) {
+    $AllGroups = Get-Quiver $Quiver
+} elseif ($PSBoundParameters.ContainsKey("TargetHost") -eq $true) {
+    $NewGroup = [MachineGroup]::new()
+    $NewGroup.Group = "SINGLE"
+    $NewGroup.Members = @()
+    $NewGroup.Members += $TargetHost
+    $AllGroups += $NewGroup
+} else {
+    Write-Host "No Quiver file or TargetHost provided."
+    Exit
+}
+
+if ($PSBoundParameters.ContainsKey('Module') -eq $true -and $PSBoundParameters.ContainsKey('ModuleArguments') -eq $false) {
+    $ModuleArguments = $null
+}
 
 if($PSBoundParameters.ContainsKey('TargetGroup') -eq $true) {
     $AllGroups = $AllGroups | Where-Object {$_.Group -eq $TargetGroup}
@@ -274,6 +304,10 @@ if($PSBoundParameters.ContainsKey('TargetGroup') -eq $true) {
 
 $LiveCred = $null
 if($PSBoundParameters.ContainsKey('Credential') -eq $true) { $LiveCred = $Credential } 
+elseif ($PSBoundParameters.ContainsKey('CredentialFile') -eq $true -and $PSBoundParameters.ContainsKey('CredentialUsername')) {
+    $Password = Get-Content $CredentialFile | ConvertTo-SecureString
+    $LiveCred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $CredentialUsername,$Password
+}
 else {$LiveCred = Get-Credential }
 
 Write-Groups $AllGroups
@@ -302,7 +336,8 @@ if($PSBoundParameters.ContainsKey('Quarry') -eq $true) {
         } 
     }
 }
-elseif ($PSBoundParameters.ContainsKey('Module') -eq $true -and $PSBoundParameters.ContainsKey('ModuleArguments') -eq $true) {
+elseif ($PSBoundParameters.ContainsKey('Module') -eq $true) {
+    $Module = $global:MyPath + "\modules\" + $Module
     foreach($Group in $AllGroups) {
         if($Group.Members) {
             Write-Color -Text ($Module)," > ",$Group.Members  -Color Cyan,Gray,DarkBlue
