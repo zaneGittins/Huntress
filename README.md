@@ -97,7 +97,7 @@ Example of using a Quarry file:
 .\Huntress.ps1 -Quiver quiver.txt -TargetGroup Accounting -Quarry .\examples\persistence.json
 ```
 
-## Example Usage
+### Example Usage
 
 ```PowerShell
   # Collecting credentials against all hosts in the target group.
@@ -114,7 +114,7 @@ Example of using a Quarry file:
 
  ```
 
-## Utilities
+### Utilities
 
 ``` PowerShell
   # Generate a quiver file using existing Active Directory OUs
@@ -130,7 +130,7 @@ Example of using a Quarry file:
 
 ## Creating and Running a LogRhythm SmartResponse with Huntress
 
-* Clone huntress to C:\Smart-Response\Huntress
+* Clone Huntress to C:\Smart-Response\Huntress
 * Create a LPI from the huntress_smart_response folder.
 * Encrypt credentials and save to disk, LogRhythm will pass these to Huntress to run scripts on remote hosts. Since LogRhythm runs SmartResponse under the system user it is necessary to generate the secure string as system. Use Psexec from command prompt to do so.
 ```
@@ -138,6 +138,3 @@ psexec -s powershell.exe
 read-host -AsSecureString | ConvertFrom-SecureString | Out-File "C:\LogRhythm-Cred.txt"
 ```
 * Data will be saved to C:\Smart-Response\Huntress\results
-
-
-In the future I plan to send this data back to LogRhythm, in addition to / or instead of the CSV output.
