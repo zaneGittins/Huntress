@@ -57,7 +57,7 @@ Example Quiver usage:
 
 ``` PowerShell
 # Collecting credentials against all hosts in the target group.
-.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Module modules\Connections.ps1
+.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Module Connections.ps1
 ```
 
 Example AutoQuiver usage:
@@ -68,11 +68,11 @@ Example AutoQuiver usage:
 
 ### Modules
 
-Modules are the PowerShell scripts that Huntress executes on remote hosts. Modules must return an array of objects.
+Modules are the PowerShell scripts that Huntress executes on remote hosts. Modules must return an array of objects. Modules must be placed in the modules directory.
 
 ``` PowerShell
 # Running the Connections module against a single host.
-.\Huntress.ps1 -TargetHost TARGETHOST -Module modules\Connections.ps1
+.\Huntress.ps1 -TargetHost TARGETHOST -Module Connections.ps1
 ```
 
 Current stable modules include:
@@ -122,10 +122,10 @@ Example Quarry Usage:
 
 ```PowerShell
 # Collecting credentials against all hosts in the target group.
-.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Module modules\Connections.ps1
+.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Module Connections.ps1
 
 # Collecting active connections for a single host. 
-.\Huntress.ps1 -TargetHost TARGETHOST -Module modules\Connections.ps1
+.\Huntress.ps1 -TargetHost TARGETHOST -Module Connections.ps1
 
 # Using a quarry file with CSV output
 .\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json -CSV
