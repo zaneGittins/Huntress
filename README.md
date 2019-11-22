@@ -75,22 +75,22 @@ Modules are the PowerShell scripts that Huntress executes on remote hosts. Modul
 
 Current stable modules include:
 
-* BAM: Background Activity Monitor registry parser.
-* Connections: Current connections on host.
-* File: Recursive listing of files and hashes of those files given a top level directory.
-* LogonEvent: 4624 events from the Security.evtx log. 
-* Prefetch: Windows Prefetch for Windows 10 hosts. Currently does not support older operating systems.
-* Process: Currently running processes.
-* RecentDocs: Recent documents accessed by users of the host.
-* Registry: Values and subkeys for a given registry key.
-* ScheduledTasks: Scheduled tasks and actions for those tasks.
-* Service: Information on currently installed services. State, path to executable (when applicable), display name.
-* StartupPrograms: Programs that start at boot.
-* WordTrustedDocs: Word documents trusted by users of the host.
+* **BAM**: Background Activity Monitor registry parser.
+* **Connections**: Current connections on host.
+* **File**: Recursive listing of files and hashes of those files given a top level directory.
+* **LogonEvent**: 4624 events from the Security.evtx log. 
+* **Prefetch**: Windows Prefetch for Windows 10 hosts. Currently does not support older operating systems.
+* **Process**: Currently running processes.
+* **RecentDocs**: Recent documents accessed by users of the host.
+* **Registry**: Values and subkeys for a given registry key.
+* **ScheduledTasks**: Scheduled tasks and actions for those tasks.
+* **Service**: Information on currently installed services. State, path to executable (when applicable), display name.
+* **StartupPrograms**: Programs that start at boot.
+* **WordTrustedDocs**: Word documents trusted by users of the host.
 
 Current development modules include: 
 
-* WMIPersistence: Work in progress conversion of PyWMIPersistenceFinder (By FireEye) to PowerShell. This module is not complete.
+* **WMIPersistence**: Work in progress conversion of PyWMIPersistenceFinder (By FireEye) to PowerShell. This module is not complete.
 
 ### Quarry
 
