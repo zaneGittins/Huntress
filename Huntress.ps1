@@ -40,12 +40,6 @@
 .PARAMETER CredentialFile 
     File containing credentials stored as a secure string.
 
-.PARAMETER CSV 
-    Write output to csv file.
-
-.PARAMETER Stack 
-    Create a stack csv file to identify outliers.
-
 .PARAMETER PrintDebug 
     Print errors to stdout rather than to error file.
 
@@ -78,8 +72,6 @@ param (
     [Parameter(Mandatory=$false)][System.Management.Automation.PSCredential]$Credential,
     [Parameter(Mandatory=$false)][string]$CredentialUsername,
     [Parameter(Mandatory=$false)][string]$CredentialFile,
-    [Switch]$CSV,
-    [Switch]$Stack,
     [Switch]$PrintDebug
 )
 
@@ -210,15 +202,12 @@ function ConvertHuntTo-CSV {
         [Parameter(Mandatory=$true)][string]$ModulePath
     )
     Try {
-        if($CSV -eq $true) {
+        [string]$Module      = (Split-Path $ModulePath -Leaf).Split(".")[0]
+        [string]$CSVFolder   = $global:MyPath + "\results" 
+        [string]$CSVFileName = $Module + "_" + (Get-Date -Format "MM_dd_yyyy_HHtt").ToString()  + ".csv"
+        [string]$CSVPath     = ($CSVFolder + "\" + $CSVFileName)
 
-            [string]$Module      = (Split-Path $ModulePath -Leaf).Split(".")[0]
-            [string]$CSVFolder   = $global:MyPath + "\results" 
-            [string]$CSVFileName = $Module + "_" + (Get-Date -Format "MM_dd_yyyy_HHtt").ToString()  + ".csv"
-            [string]$CSVPath     = ($CSVFolder + "\" + $CSVFileName)
-
-            $AllResults | Export-Csv -Path $CSVPath -NoTypeInformation 
-        }
+        $AllResults | Export-Csv -Path $CSVPath -NoTypeInformation 
     }
     Catch [Exception] {
         Add-Content $global:ErrorLog -Value $Error
@@ -262,8 +251,7 @@ function Invoke-Hunt {
             $AllResults += Get-Hunt -ChildJob $ChildHunt -MachineName $MachineNames[$Index]
             $Index += 1
         }
-        if($CSV) { ConvertHuntTo-CSV -AllResults $AllResults -ModulePath $Module } 
-        else { Write-Array -MachineName $MachineName -Array $AllResults -Color Red } 
+        ConvertHuntTo-CSV -AllResults $AllResults -ModulePath $Module
     }
 }
 

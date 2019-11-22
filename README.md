@@ -15,7 +15,7 @@
         yNNNNN-
 ```
 
-PowerShell tool to enable blue teams to identify compromised systems and perform triages of important Windows artifacts. This project is similar, and some features are inspired by [Kansa](https://github.com/davehull/Kansa) as well as the SANS FOR508 course. One of the differentiators between Huntress and other projects is that Huntress integrates with LogRhythm to provide SOAR capabilities.
+PowerShell tool to enable blue teams to identify compromised systems and perform triages of important Windows artifacts. This project is similar, and some features are inspired by [Kansa](https://github.com/davehull/Kansa) as well as the SANS FOR508 course. One of the differentiators between Huntress and other projects is that Huntress integrates with LogRhythm to provide SOAR capabilities. All output is in CSV format.
 
 ## Requirements
 
@@ -30,8 +30,6 @@ Huntress can be run in many ways.
 * Against multiple hosts.
 * With a single module.
 * Running multiple modules.
-* With commandline output.
-* With CSV output.
 
 ### Quiver 
 
@@ -82,9 +80,13 @@ Current stable modules include:
 * File: Recursive listing of files and hashes of those files given a top level directory.
 * LogonEvent: 4624 events from the Security.evtx log. 
 * Prefetch: Windows Prefetch for Windows 10 hosts. Currently does not support older operating systems.
+* Process: Currently running processes.
+* RecentDocs: Recent documents accessed by users of the host.
 * Registry: Values and subkeys for a given registry key.
 * ScheduledTasks: Scheduled tasks and actions for those tasks.
 * Service: Information on currently installed services. State, path to executable (when applicable), display name.
+* StartupPrograms: Programs that start at boot.
+* WordTrustedDocs: Word documents trusted by users of the host.
 
 Current development modules include: 
 
@@ -127,11 +129,11 @@ Example Quarry Usage:
 # Collecting active connections for a single host. 
 .\Huntress.ps1 -TargetHost TARGETHOST -Module Connections.ps1
 
-# Using a quarry file with CSV output
-.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json -CSV
+# Using a quarry file.
+.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json
 
 # Pass credentials obtained from Get-Credential
-.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json -CSV -Credential $MyCredential
+.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json -Credential $MyCredential
 ```
 
 ### Utilities
@@ -162,3 +164,12 @@ psexec -s powershell.exe
 Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "C:\LogRhythm-Cred.txt"
 ```
 * Results of LogRhythm SmartResponse are saved to C:\Smart-Response\Huntress\results
+
+## Credits
+
+* [Dave Hull](https://github.com/davehull)
+* [Rob Lee](https://www.sans.org/course/advanced-incident-response-threat-hunting-training)
+* [Eric Zimmerman](https://github.com/EricZimmerman)
+* [Michael Leclair](https://digitalforensicsurvivalpodcast.com/2019/11/11/dfsp-195-bam/)
+* [Jai Minton](https://www.jaiminton.com/cheatsheet/DFIR/#startup-process-information)
+* [Mari DeGrazia](http://az4n6.blogspot.com/2016/02/more-on-trust-records-macros-and.html)

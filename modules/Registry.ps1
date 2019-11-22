@@ -36,12 +36,11 @@ function Get-Key {
     $KeyExists = Test-Path Registry::$RegKey
     if($KeyExists -eq $true) {
         $Values = (Get-Item Registry::$RegKey)
-
         $Values.PSObject | ForEach-Object { 
-            foreach($string in $_.BaseObject.Property){
-                    $NewKey = [RegistryKey]::new()
-                    $NewKey.RegKey = $RegKey 
-                    $NewKey.Value  = $_.BaseObject.GetValue($string)
+            foreach($string in $_.BaseObject.Property) {
+                    $NewKey            = [RegistryKey]::new()
+                    $NewKey.RegKey     = $RegKey 
+                    $NewKey.Value      = $_.BaseObject.GetValue($string)
                     $global:ReturnData += $NewKey
                 } 
             }
