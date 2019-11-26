@@ -16,7 +16,6 @@ $global:ReturnData = @()
 class OfficeDocument {
     [string]$Path     = ""
     [string]$Ran      = ""
-
 }
 
 function Get-OfficeTrustedDocs { 

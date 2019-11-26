@@ -18,17 +18,9 @@ class Service {
     [string]$DisplayName    = ""
     [string]$State          = ""
     [string]$PathName       = ""
-
-    [string]ToString() {
-        $ToReturn = "Name: "    + $this.Name
-        $ToReturn += " DName: " + $this.DisplayName
-        $ToReturn += " State: " + $this.State
-        $ToReturn += " Path: "  + $this.PathName
-        Return $ToReturn
-    }
 }
 
-function Hunt-Services {
+function Get-ServiceDetailed {
     [CmdletBinding()]
     param ([Parameter(Mandatory=$true)][array]$Services)
 
@@ -46,6 +38,6 @@ function Hunt-Services {
 
 $AllServices = Get-WmiObject win32_service | select Name, DisplayName, State, PathName
 
-Hunt-Services -Services $AllServices
+Get-ServiceDetailed -Services $AllServices
 
 Return $global:ReturnData

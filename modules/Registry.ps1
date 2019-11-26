@@ -21,11 +21,6 @@ $global:ReturnData = @()
 class RegistryKey {
     [string]$RegKey = ""
     [string]$Value  = ""
-
-    [string]ToString() {
-        $ToReturn = "REG-KEY[" + $this.Exists.ToString() + "]: " + $this.RegKey + " = " + $this.Value
-        Return $ToReturn
-    }
 }
 
 function Get-Key {

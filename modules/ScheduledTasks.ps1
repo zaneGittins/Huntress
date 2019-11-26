@@ -27,13 +27,6 @@ class ScheduledTask {
     [string]$TaskState
     [double]$RelativeEntropy
     [string]$Action
-    
-    [string]ToString() {
-        $ToReturn = "SCHEDULED-TASK[" + $this.TaskState.ToString() +"]: " + $this.TaskName + " "
-        $ToReturn += $this.TaskPath + " Relative Entropy: " + $this.RelativeEntropy.ToString()
-        $ToReturn += " Action: " + $this.Action + "`n"
-        Return $ToReturn
-    }
 }
 
 function Get-RelativeEntropy {

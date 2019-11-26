@@ -3,10 +3,12 @@
 <#
 .SYNOPSIS 
     Huntress Process Module - Gets running processes using Get-Process.
+    Calculates SHA256 hash of image path. Gets authenticode signature of
+    image path.
 
 .NOTES
     Author: Zane Gittins
-    Last Updated: 3/13/2019
+    Last Updated: 11/26/2019
 #>
 
 param ()
@@ -15,30 +17,33 @@ $ErrorActionPreference = "SilentlyContinue"
 $global:ReturnData = @()
 
 class Process {
-    [string]$ProcessName = ""
-    [string]$ImagePath = ""
-    [string]$PID = ""
-
-    [string]ToString() {
-        $ToReturn = "PID: " + $this.PID + " PROCESS NAME: " + $this.ProcessName + " IMAGE PATH: " + $this.ImagePath
-        Return $ToReturn
-    }
+    [string]$PID                = ""
+    [string]$ProcessName        = ""
+    [string]$ImagePath          = ""
+    [string]$ImageHash          = ""
+    [string]$SignatureSubject   = ""
+    [string]$SignatureStatus    = ""
 }
 
-function Hunt-Processes {
+function Get-ProcessDetailed {
     [CmdletBinding()]
     param ()
     foreach($Process in $global:RunningProcesses) {
-        $NewProcess = [Process]::new()
-        $NewProcess.ProcessName = $Process.ProcessName
-        $NewProcess.PID = $Process.ID
-        $NewProcess.ImagePath = $Process.Path
+
+        $NewProcess                     = [Process]::new()
+        $NewProcess.ProcessName         = $Process.ProcessName
+        $NewProcess.PID                 = $Process.ID
+        $NewProcess.ImagePath           = $Process.Path
+        $NewProcess.ImageHash           = (Get-FileHash $Process.Path).hash
+        $Signature                      = (Get-AuthenticodeSignature $Process.Path)
+        $NewProcess.SignatureStatus     = $Signature.Status 
+        $NewProcess.SignatureSubject    = $Signature.SignerCertificate.Subject
         $global:ReturnData += $NewProcess
     }
 }
 
 $global:RunningProcesses = Get-Process
 
-Hunt-Processes
+Get-ProcessDetailed
 
 Return $global:ReturnData

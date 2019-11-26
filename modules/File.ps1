@@ -3,12 +3,14 @@
 <#
 .SYNOPSIS 
     Huntress File Module - Gets all files under a base directory.
+    Calculates hashes for all of those files.
 
 .PARAMETER BaseDirectory
     Base directory to recursively search under.
 
 .NOTES
     Author: Zane Gittins
+    Last Updated: 11/26/2019
 #>
 
 param (
@@ -19,15 +21,12 @@ $ErrorActionPreference = "SilentlyContinue"
 $global:ReturnData = @()
 
 class File {
-    [string]$Filename
-    [string]$Filepath
-    [string]$MD5
-    [string]ToString() {
-        return "FILENAME: " + $this.Filename + " FILEPATH: " + $this.Filepath +  " MD5 " + $this.MD5
-    }
+    [string]$FileName
+    [string]$FilePath
+    [string]$FileHash
 }
 
-function Start-FileHunt {
+function Get-ChildItemDetailed {
     [CmdletBinding()]
     param()
 
@@ -35,14 +34,14 @@ function Start-FileHunt {
         if($Item.GetType().ToString() -eq "System.IO.FileInfo" -and [System.IO.File]::Exists($Item.FullName)) {
             $Permission = (Get-Acl $Item.FullName).Access | Where-Object {$_.IdentityReference -match $env:UserName } | Select-Object IdentityReference,FileSystemRights
             if($Permission) {
-                $NewFile = [File]::new()
-                $NewFile.Filename = $Item.Name
-                $NewFile.Filepath = $Item.FullName
+                $NewFile            = [File]::new()
+                $NewFile.FileName   = $Item.Name
+                $NewFile.FilePath   = $Item.FullName
                 try {
-                    $NewFile.MD5 = (Get-FileHash -Algorithm MD5 $Item.FullName).Hash
+                    $NewFile.FileHash = (Get-FileHash $Item.FullName).Hash
                 }
                 catch {
-                    $NewFile.MD5 = "Failed to calulate."
+                    $NewFile.FileHash = "Failed to calulate."
                 }
                 $global:ReturnData += $NewFile
             }
@@ -52,6 +51,6 @@ function Start-FileHunt {
 
 $global:FileSearch = Get-ChildItem -Path $BaseDirectory -Recurse -ErrorAction SilentlyContinue -Force
 
-Start-FileHunt 
+Get-ChildItemDetailed
 
 return $global:ReturnData

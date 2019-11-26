@@ -17,7 +17,6 @@ class StartupProgram {
     [string]$Name     = ""
     [string]$Location = ""
     [string]$Command  = ""
-
 }
 
 $AllStartupPrograms = Get-CimInstance Win32_StartupCommand | Select-Object Name, command, Location, User

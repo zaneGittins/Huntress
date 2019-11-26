@@ -21,15 +21,6 @@ class PrefetchFile {
     [string]$Filename
     [string]$Hash
     [string]$LastRunTime
-
-    [string]ToString() {
-        $ToReturn += "Version: " + $this.Version.ToString() + "`n"
-        $ToReturn += "Signature: " + $this.Signature.ToString() + "`n"
-        $ToReturn += "Size: " + $this.FileSize.ToString() + "`n"
-        $ToReturn += "Filename: " + $this.Filename + "`n"
-        $ToReturn += "`n"
-        Return $ToReturn
-    }
 }
 
 function Compare-PrefetchHeader {
