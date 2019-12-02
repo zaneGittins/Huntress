@@ -23,6 +23,7 @@ class Process {
     [string]$ImageHash          = ""
     [string]$SignatureSubject   = ""
     [string]$SignatureStatus    = ""
+    [string]$CommandLine        = ""
 }
 
 function Get-ProcessDetailed {
@@ -38,6 +39,8 @@ function Get-ProcessDetailed {
         $Signature                      = (Get-AuthenticodeSignature $Process.Path)
         $NewProcess.SignatureStatus     = $Signature.Status 
         $NewProcess.SignatureSubject    = $Signature.SignerCertificate.Subject
+        [int]$SearchID                  = $Process.ID
+        $NewProcess.CommandLine         = (Get-WmiObject Win32_Process -Filter "ProcessID = $SearchID" | Select-Object CommandLine).CommandLine
         $global:ReturnData += $NewProcess
     }
 }
