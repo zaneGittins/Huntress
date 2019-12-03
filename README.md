@@ -76,11 +76,11 @@ Modules are the PowerShell scripts that Huntress executes on remote hosts. Modul
 Current stable modules include:
 
 * **BAM**: Background Activity Monitor registry parser.
-* **Connections**: Current connections on host.
-* **File**: Recursive listing of files and hashes of those files given a top level directory.
+* **Connections**: Current connections on host. Calculates hash of associated PID image path if available.
+* **File**: Recursive listing of files and hashes of those files given a top level directory. Checks signature, checks file entropy.
 * **LogonEvent**: 4624 events from the Security.evtx log. 
 * **Prefetch**: Windows Prefetch for Windows 10 hosts. Currently does not support older operating systems.
-* **Process**: Currently running processes.
+* **Process**: Currently running processes, checks signature and calculates hash. Gets command line.
 * **RecentDocs**: Recent documents accessed by users of the host.
 * **Registry**: Values and subkeys for a given registry key.
 * **ScheduledTasks**: Scheduled tasks and actions for those tasks.
