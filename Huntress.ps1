@@ -51,8 +51,7 @@
 
 .NOTES
     Author: Zane Gittins
-    Last Updated: 2/25/2019
-    Version 1.0
+    Last Updated: 11/3/2019
   #>
 
 param (
@@ -92,7 +91,6 @@ class MachineGroup {
 }
 
 function Write-Banner {
-    # Print the Huntress banner.
     [CmdletBinding()]
     param() 
     $Banner = "
@@ -232,27 +230,38 @@ Write-Banner
 
 $AllGroups = @() 
 
+# User must provide either a quiver file or taret host.
 if($PSBoundParameters.ContainsKey('Quiver') -eq $true -and $Quiver -ne "" -and $Quiver -ne $null) {
     $AllGroups = Get-Quiver $Quiver
-} elseif ($PSBoundParameters.ContainsKey("TargetHost") -eq $true) {
+
+    # User must provide a target group if quiver is specified.
+    if($PSBoundParameters.ContainsKey('TargetGroup') -eq $true) {
+        $AllGroups = $AllGroups | Where-Object {$_.Group -eq $TargetGroup}
+    } else {
+        Get-Help $MyInvocation.MyCommand.Path
+        Write-Color -Text "Quiver specified but no TargetGroup given." -Color Red
+        Exit
+    }
+} 
+elseif ($PSBoundParameters.ContainsKey("TargetHost") -eq $true) {
     $NewGroup = [MachineGroup]::new()
     $NewGroup.Group = "SINGLE"
     $NewGroup.Members = @()
     $NewGroup.Members += $TargetHost
     $AllGroups += $NewGroup
-} else {
-    Write-Host "No Quiver file or TargetHost provided."
+}
+else {
+    Get-Help $MyInvocation.MyCommand.Path
+    Write-Color -Text "No Quiver or TargetHost provided." -Color Red
     Exit
 }
 
+# If user provided Module and did not provide ModuleArguments then set variable to null.
 if ($PSBoundParameters.ContainsKey('Module') -eq $true -and $PSBoundParameters.ContainsKey('ModuleArguments') -eq $false) {
     $ModuleArguments = $null
-}
+} 
 
-if($PSBoundParameters.ContainsKey('TargetGroup') -eq $true) {
-    $AllGroups = $AllGroups | Where-Object {$_.Group -eq $TargetGroup}
-}
-
+# User must pass credentials or enter credentials at run-time.
 $LiveCred = $null
 if($PSBoundParameters.ContainsKey('Credential') -eq $true) { $LiveCred = $Credential } 
 elseif ($PSBoundParameters.ContainsKey('CredentialFile') -eq $true -and $PSBoundParameters.ContainsKey('CredentialUsername')) {
@@ -261,6 +270,7 @@ elseif ($PSBoundParameters.ContainsKey('CredentialFile') -eq $true -and $PSBound
 }
 else {$LiveCred = Get-Credential }
 
+# Display groups that Huntress will run against.
 Write-Groups $AllGroups
 
 Write-Host ""
@@ -276,5 +286,6 @@ if ($PSBoundParameters.ContainsKey('Module') -eq $true) {
 }
 else {
     Get-Help $MyInvocation.MyCommand.Path
+    Write-Color -Text "No Module provided." -Color Red
     Exit
 }
