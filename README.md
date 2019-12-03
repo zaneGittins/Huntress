@@ -24,12 +24,7 @@ PowerShell tool to enable blue teams to identify compromised systems and perform
 
 ## Terminology
 
-Huntress can be run in many ways. 
-
-* Against a single host.
-* Against multiple hosts.
-* With a single module.
-* Running multiple modules.
+Huntress can be used to target a single host using the HostName parameter, or to target a group of hosts by using the HostGroup AND Quiver parameters. 
 
 ### Quiver 
 
@@ -39,28 +34,28 @@ Quiver Syntax Example:
 
 ``` Plaintext
 [GROUP-NAME1]
-HOST1
-HOST2
+HOST-1
+HOST-2
 ...
-HOSTN
+HOST-N
 
 [GROUP-NAME2]
-HOST1
-HOST2
+HOST-1
+HOST-2
 ...
-HOSTN
+HOST-M
 ```
 
 Example Quiver usage:
 
 ``` PowerShell
-# Collecting credentials against all hosts in the target group.
+# Collecting connection information of all hosts in the MYGROUP.
 .\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Module Connections.ps1
 ```
 
 Example AutoQuiver usage:
 
-``` Plaintext
+``` PowerShell
 .\utils\AutoQuiver.ps1 -OutputFile quiver.txt
 ```
 
@@ -92,34 +87,6 @@ Current development modules include:
 
 * **WMIPersistence**: Work in progress conversion of PyWMIPersistenceFinder (By FireEye) to PowerShell. This module is not complete.
 
-### Quarry
-
-A quarry file is used to run multiple modules against a host or group of hosts in the same invocation. The quarry file is in json format and specifies modules to run and module parameters. Parameters are passed positionally, therefore it is important to look at the arguments taken by a module when constructing a quarry file.
-
-Example Quarry File:
-
-``` JSON
-{
-    "modules\\MyModule.ps1":
-    {
-        "Parameter1":[],
-        "Parameter2": []
-    },
-    "modules\\MyModule2.ps1":
-    {
-        "Parameter1":[],
-        "Parameter2": []
-    }
-}
-```
-
-Example Quarry Usage:
-
-``` PowerShell
-# Hunting for persistence against all hosts in the Accounting group.
-.\Huntress.ps1 -Quiver quiver.txt -TargetGroup Accounting -Quarry .\examples\persistence.json
-```
-
 ### Example Usage
 
 ```PowerShell
@@ -128,12 +95,6 @@ Example Quarry Usage:
 
 # Collecting active connections for a single host. 
 .\Huntress.ps1 -TargetHost TARGETHOST -Module Connections.ps1
-
-# Using a quarry file.
-.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json
-
-# Pass credentials obtained from Get-Credential
-.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Quarry examples\persistence.json -Credential $MyCredential
 ```
 
 ### Utilities
