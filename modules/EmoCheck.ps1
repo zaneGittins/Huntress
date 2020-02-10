@@ -173,11 +173,10 @@ if($EmotetProcessName -ne $null) {
     Get-ProcessDetailed -EmotetProcessName $EmotetProcessName
 }
 
-if($global:ReturnData.Length -ge 1) {
-    Write-Host "Emotet Detected!"
-} 
-else {
-    Write-Host "No detection."
+if($global:ReturnData.Length -eq 0) {
+    $NewProcess = [process]::new()
+    $NewProcess.ProcessName = "Host Clean"
+    $global:ReturnData += $NewProcess
 }
 
 Return $global:ReturnData
