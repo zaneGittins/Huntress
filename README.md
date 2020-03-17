@@ -82,6 +82,7 @@ Current stable modules include:
 * **Service**: Information on currently installed services. State, path to executable (when applicable), display name.
 * **StartupPrograms**: Programs that start at boot.
 * **WordTrustedDocs**: Word documents trusted by users of the host.
+* **EmoCheck**: Detects Emotet using unique way some variants of Emotet generate process name. Based on JPCert's code.
 
 Current development modules include: 
 
@@ -109,28 +110,3 @@ Current development modules include:
 # Set a registry key on your local computer so that Get-Credential works via commandline without GUI popup.
 .\utils\CredentialCommandline.ps1
 ```
-
-## Creating and Running a LogRhythm SmartResponse with Huntress
-
-This repository contains a folder named "huntress\_smart\_response" from this folder you can create a LogRhythm LPI, which can be imported into LogRhythm to allow LogRhythm to run Huntress as a SmartResponse. Follow these steps to allow LogRhythm to run Huntress as a SmartResponse:
-
-* Create a smart response directory C:\Smart-Response
-* Clone Huntress to C:\Smart-Response\Huntress
-* Create an LPI from the huntress\_smart\_response folder.
-* Import the LPI into LogRhythm. 
-* Encrypt LogRhythm AD credentials and save to disk, LogRhythm will pass these to Huntress to run scripts on remote hosts. Since LogRhythm runs SmartResponse under the SYSTEM user, it is necessary to generate a secure string as SYSTEM. One way to create these credentials is to use the sysinternals tool psexec.
-
-``` PowerShell
-psexec -s powershell.exe
-Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "C:\LogRhythm-Cred.txt"
-```
-* Results of LogRhythm SmartResponse are saved to C:\Smart-Response\Huntress\results
-
-## Credits
-
-* [Dave Hull](https://github.com/davehull)
-* [Rob Lee](https://www.sans.org/course/advanced-incident-response-threat-hunting-training)
-* [Eric Zimmerman](https://github.com/EricZimmerman)
-* [Michael Leclair](https://digitalforensicsurvivalpodcast.com/2019/11/11/dfsp-195-bam/)
-* [Jai Minton](https://www.jaiminton.com/cheatsheet/DFIR/#startup-process-information)
-* [Mari DeGrazia](http://az4n6.blogspot.com/2016/02/more-on-trust-records-macros-and.html)
