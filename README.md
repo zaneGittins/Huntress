@@ -110,3 +110,12 @@ Current development modules include:
 # Set a registry key on your local computer so that Get-Credential works via commandline without GUI popup.
 .\utils\CredentialCommandline.ps1
 ```
+
+## Credits
+
+* [Dave Hull](https://github.com/davehull)
+* [Rob Lee](https://www.sans.org/course/advanced-incident-response-threat-hunting-training)
+* [Eric Zimmerman](https://github.com/EricZimmerman)
+* [Michael Leclair](https://digitalforensicsurvivalpodcast.com/2019/11/11/dfsp-195-bam/)
+* [Jai Minton](https://www.jaiminton.com/cheatsheet/DFIR/#startup-process-information)
+* [Mari DeGrazia](http://az4n6.blogspot.com/2016/02/more-on-trust-records-macros-and.html)
