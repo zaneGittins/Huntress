@@ -1,17 +1,12 @@
 #Requires -Version 5.0
-#Requires -Modules PSWriteColor
 
 <#
 .SYNOPSIS
-    Huntress is a PowerShell tool to help identify compromised systems. 
+    Huntress is a PowerShell tool to gather forensic data from systems.
 
 .DESCRIPTION 
     Huntress is a tool designed to help blue teams identify compromised systems. Huntress runs PowerShell scripts against groups of machines
-    and returns results to tuples based on the severity of it's findings. This makes Huntress easy to extend - All that is required is that your 
-    script return a tuple containing three arrays: informational, warning, and critical.
-
-.PARAMETER Quiver
-    A newline delimited file containing groups and machine names. Group names should be enclosed in square brackets.
+    and writes results in CSV format
 
 .PARAMETER Module
     Path to the module to run against the target group. 
@@ -19,76 +14,48 @@
 .PARAMETER ModuleArguments
     Comma seperated list of arguments to pass to the module.
 
-.PARAMETER TargetGroup
-    Group to limit the module to. 
+.PARAMETER TargetOU
+    Organizational unit to run module against. 
 
 .PARAMETER TargetHost
-    Use a specific host name, does not require a quiver file. Do not use with TargetGroup or Quiver.
+    Use a specific host name.
 
 .PARAMETER Credential 
     Pass credential to Huntress.
 
-.PARAMETER CrednetialUsername
-    Username to be used with password retrieved from credential file.
+.PARAMETER Output
+    File path to output results to. Default is within results folder.
 
-.PARAMETER CredentialFile 
-    File containing credentials stored as a secure string.
-
-.PARAMETER PrintDebug 
-    Print errors to stdout rather than to error file.
+.PARAMETER DryRun
+    Display what hosts Huntress will run against, do not run modules.
 
 .EXAMPLE
- .\Huntress.ps1 -Quiver .\quiver.txt -Module .\modules\Connections.ps1 -TargetGroup MYGROUP -Username MYDOMAIN\myusername -ModuleArguments 127.0.0.1
-
-.EXAMPLE
- .\Huntress.ps1 -Quiver .\quiver.txt -Module .\modules\Registry.ps1 -TargetGroup MYGROUP -Username MYDOMAIN\myusername -ModuleArguments HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run,$null -Info
-
-.EXAMPLE 
-  .\Huntress.ps1 -Quiver .\quiver.txt -Module .\modules\Process.ps1 -TargetGroup MYGROUP -Username MYDOMAIN\myusername -ModuleArguments $null,$null,2360
- 
-.EXAMPLE
-  .\Huntress.ps1 -Quiver .\quiver.txt -Module .\modules\File.ps1 -TargetGroup WINDOWS-PRD -Username HAASAUTO\zaneadmin -ModuleArguments C:\Users\tagetusername,EE27DB3652032A3498C54A12407B0CB5
+ .\Huntress.ps1 -TargetHost MYCOMPUTER -Module .\modules\Connections.ps1 -TargetGroup MYGROUP -Credential $MyCredential
 
 .NOTES
     Author: Zane Gittins
-    Last Updated: 11/3/2019
+    Last Updated: 3/18/2019
   #>
 
 param (
-    [Parameter(Mandatory=$false)][string]$Quiver,
     [Parameter(Mandatory=$false)][string]$Module,
     [Parameter(Mandatory=$false)][array]$ModuleArguments,
-    [Parameter(Mandatory=$false)][string]$TargetGroup,
+    [Parameter(Mandatory=$false)][string]$TargetOU,
     [Parameter(Mandatory=$false)][string]$TargetHost,
     [Parameter(Mandatory=$false)][System.Management.Automation.PSCredential]$Credential,
-    [Parameter(Mandatory=$false)][string]$CredentialUsername,
-    [Parameter(Mandatory=$false)][string]$CredentialFile,
-    [Switch]$PrintDebug
+    [Parameter(Mandatory=$false)][string]$Output,
+    [switch]$DryRun
 )
 
 # Only show errors in stdout if in debug mode -- else write to file.
-if($PrintDebug) { $ErrorActionPreference = "Continue"}
+if($PSBoundParameters['Verbose']) { $ErrorActionPreference = "Continue"}
 else { $ErrorActionPreference = "SilentlyContinue" }
 
 # Setup file to write all errors to when not in debug mode. 
 $global:MyPath     = (Split-Path -Parent $MyInvocation.MyCommand.Definition)
 $global:ErrorLog   = $global:MyPath + "\results\errorlog.txt"
+$global:Output     = $Output
 if(!(Test-Path $global:ErrorLog)) { New-Item -path $global:ErrorLog -type "file"}
-
-class MachineGroup {
-    [string]$Group
-    [array]$Members = @()
-
-    [string]ToString()
-    {
-        $ToReturn = $this.Group + "`n"
-        foreach($Member in $this.Members)
-        {
-            $ToReturn += ($Member + "`n")
-        }
-        Return $ToReturn
-    }
-}
 
 function Write-Banner {
     [CmdletBinding()]
@@ -109,50 +76,33 @@ function Write-Banner {
         yNNNNN-          
         `````` "      
                    
-    $Details = "`nAuthor: Zane Gittins`n Version Alpha 1.0`n"
-    Write-Color -Text $Banner,$Details -Color Blue,DarkBlue
+    $Details = "`nAuthor: Zane Gittins`n Version Alpha 1.1`n"
+    Write-Host $Banner,$Details
 }
 
-function Get-Quiver {
-    <# 
-        Create MachineGroups and fill with members based on quiver file. 
-        Quiver file should be newline delimited. To specify a group enclose the name in square brackets. For Example: [MYGROUP]
-        Place machine names under a group. Machine names are allowed to be present in multiple groups.
-    #>
+function Get-ComputerNamesFromOU {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)][string]$Quiver
+        [Parameter(Mandatory=$true)][string]$TargetOU
     )
-    $QuiverData = Get-Content $Quiver
-    $AllGroups = @()
-    $CurrentGroup = $null
-    foreach ($Line in $QuiverData) {
-        if($Line -Match "\[[a-zA-Z0-9\-\ ]+\]") {
-            $NewGroup = [MachineGroup]::new()
-            $NewGroup.Group = $Line -replace "[\[\]]+"
-            $NewGroup.Members = @()
-            $AllGroups += $NewGroup
-            $CurrentGroup = $NewGroup
-        }
-        elseif ($Line -Match "[a-zA-Z0-9\-]+") {
-            $CurrentGroup.Members += $Line
-        }
+    $Computers = Get-ADComputer -Filter * -SearchBase $TargetOU
+    $ComputerNames = @()
+    foreach ($Computer in $Computers) {
+        $ComputerNames += ($Computer.Name)
     }
-    Return $AllGroups
+    Return $ComputerNames
 }
 
-function Write-Groups {
+function Write-ComputerNames {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory=$true)][array]$Groups
+        [Parameter(Mandatory=$true)][array]$Computers
     )
-    foreach($Group in $Groups) {
-        Write-Color -Text ("`n  " + $Group.Group) -Color Blue
-        $count = 1
-        foreach($Member in $Group.Members) {
-            Write-Color -Text  $count.ToString()," ",$Member -Color Blue,Gray,DarkBlue
-            $count += 1
-        }
+    [int]$count = 0
+
+    foreach($Computer in $Computers) {
+        Write-Host $count.ToString()," ",$Computer
+        $count += 1
     }
 }
 
@@ -166,11 +116,16 @@ function ConvertHuntTo-CSV {
         [string]$Module      = (Split-Path $ModulePath -Leaf).Split(".")[0]
         [string]$CSVFolder   = $global:MyPath + "\results" 
         [string]$CSVFileName = $Module + "_" + (Get-Date -Format "MM_dd_yyyy_HHtt").ToString()  + ".csv"
-        [string]$CSVPath     = ($CSVFolder + "\" + $CSVFileName)
+        [string]$CSVPath     = ""
+        
+        if($global:Output) { $CSVPath = $global:Output } 
+        else { $CSVPath = ($CSVFolder + "\" + $CSVFileName) }
 
+        Write-Verbose ("Writing csv to > " + $CSVPath)
         $AllResults | Export-Csv -Path $CSVPath -NoTypeInformation 
     }
     Catch [Exception] {
+        Write-Verbose $Error
         Add-Content $global:ErrorLog -Value $Error
         $Error.Clear()
     }
@@ -228,31 +183,23 @@ function Get-Hunt {
 
 Write-Banner
 
-$AllGroups = @() 
+$AllComputers = @() 
 
-# User must provide either a quiver file or taret host.
-if($PSBoundParameters.ContainsKey('Quiver') -eq $true -and $Quiver -ne "" -and $Quiver -ne $null) {
-    $AllGroups = Get-Quiver $Quiver
-
-    # User must provide a target group if quiver is specified.
-    if($PSBoundParameters.ContainsKey('TargetGroup') -eq $true) {
-        $AllGroups = $AllGroups | Where-Object {$_.Group -eq $TargetGroup}
-    } else {
-        Get-Help $MyInvocation.MyCommand.Path
-        Write-Color -Text "Quiver specified but no TargetGroup given." -Color Red
-        Exit
-    }
+if($PSBoundParameters.ContainsKey("TargetOU") -eq $true -and $TargetOU -ne "" -and $TargetOU -ne $null) {
+    $AllComputers = Get-ComputerNamesFromOU $TargetOU
 } 
 elseif ($PSBoundParameters.ContainsKey("TargetHost") -eq $true) {
-    $NewGroup = [MachineGroup]::new()
-    $NewGroup.Group = "SINGLE"
-    $NewGroup.Members = @()
-    $NewGroup.Members += $TargetHost
-    $AllGroups += $NewGroup
+    $AllComputers += $TargetHost
 }
 else {
     Get-Help $MyInvocation.MyCommand.Path
-    Write-Color -Text "No Quiver or TargetHost provided." -Color Red
+    Write-Host "[-] No TargetOU or TargetHost provided."
+    Exit
+}
+
+# Only print computer names that Huntress will run against.
+if($DryRun) {
+    Write-ComputerNames $AllComputers
     Exit
 }
 
@@ -262,30 +209,16 @@ if ($PSBoundParameters.ContainsKey('Module') -eq $true -and $PSBoundParameters.C
 } 
 
 # User must pass credentials or enter credentials at run-time.
-$LiveCred = $null
-if($PSBoundParameters.ContainsKey('Credential') -eq $true) { $LiveCred = $Credential } 
-elseif ($PSBoundParameters.ContainsKey('CredentialFile') -eq $true -and $PSBoundParameters.ContainsKey('CredentialUsername')) {
-    $Password = Get-Content $CredentialFile | ConvertTo-SecureString
-    $LiveCred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $CredentialUsername,$Password
-}
-else {$LiveCred = Get-Credential }
-
-# Display groups that Huntress will run against.
-Write-Groups $AllGroups
+if($PSBoundParameters.ContainsKey('Credential') -eq $false) { $Credential = Get-Credential }
 
 Write-Host ""
 
 if ($PSBoundParameters.ContainsKey('Module') -eq $true) {
-    $Module = $global:MyPath + "\modules\" + $Module
-    foreach($Group in $AllGroups) {
-        if($Group.Members) {
-            Write-Color -Text ($Module)," > ",$Group.Members  -Color Cyan,Gray,DarkBlue
-            Invoke-Hunt -MachineNames $Group.Members -Module $Module -ModuleArguments $ModuleArguments -Credential $LiveCred 
-        }
-    } 
+        Write-Host ($Module)," > ",$AllComputers
+        Invoke-Hunt -MachineNames $AllComputers -Module $Module -ModuleArguments $ModuleArguments -Credential $Credential 
 }
 else {
     Get-Help $MyInvocation.MyCommand.Path
-    Write-Color -Text "No Module provided." -Color Red
+    Write-Host "[-] No Module provided."
     Exit
 }

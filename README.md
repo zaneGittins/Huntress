@@ -19,45 +19,11 @@ PowerShell tool to enable blue teams to identify compromised systems and perform
 
 ## Requirements
 
-* Install-Module -Name PSWriteColor
-* PowerShell Version >= 5
+* PowerShell Version >= 5 on hosts and client. Some modules may work on PowerShell < 5, but this is untested.
 
 ## Terminology
 
-Huntress can be used to target a single host using the HostName parameter, or to target a group of hosts by using the HostGroup AND Quiver parameters. 
-
-### Quiver 
-
-A text file called a quiver file is defined when running Huntress against multiple hosts. The text file should be newline delimited, and should specifiy group names and host names. Group names are arbitrary, but should be chosen meaningfully. Hosts can be present in multiple groups. For easy generation of a quiver file you can use the script AutoQuiver.ps1 provided in the utils directory to generate a quiver file based on AD OUs. 
-
-Quiver Syntax Example:
-
-``` Plaintext
-[GROUP-NAME1]
-HOST-1
-HOST-2
-...
-HOST-N
-
-[GROUP-NAME2]
-HOST-1
-HOST-2
-...
-HOST-M
-```
-
-Example Quiver usage:
-
-``` PowerShell
-# Collecting connection information of all hosts in the MYGROUP.
-.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Module Connections.ps1
-```
-
-Example AutoQuiver usage:
-
-``` PowerShell
-.\utils\AutoQuiver.ps1 -OutputFile quiver.txt
-```
+Huntress can be used to target a single host using the TargetHost parameter, or to target all computers in an OU using TargetOU.
 
 ### Modules
 
@@ -65,7 +31,7 @@ Modules are the PowerShell scripts that Huntress executes on remote hosts. Modul
 
 ``` PowerShell
 # Running the Connections module against a single host.
-.\Huntress.ps1 -TargetHost TARGETHOST -Module Connections.ps1
+.\Huntress.ps1 -TargetHost ExampleComputer -Module .\modules\Connections.ps1
 ```
 
 Current stable modules include:
@@ -91,19 +57,19 @@ Current development modules include:
 ### Example Usage
 
 ```PowerShell
-# Collecting credentials against all hosts in the target group.
-.\Huntress.ps1 -Quiver .\quiver.txt -TargetGroup MYGROUP -Module Connections.ps1
+# Dry run to see what hosts the module will run against in the Workstations OU.
+.\Huntress.ps1 -TargetOU "CN=Workstations, DC=contoso, DC=com" -Module .\modules\Connections.ps1 -DryRun
 
-# Collecting active connections for a single host. 
-.\Huntress.ps1 -TargetHost TARGETHOST -Module Connections.ps1
+# Collecting connections against all hosts in the Workstations OU. Verbose switch to show errors.
+.\Huntress.ps1 -TargetOU "CN=Workstations, DC=contoso, DC=com" -Module .\modules\Connections.ps1 -Verbose
+
+# Collecting prefetch data for single host. 
+.\Huntress.ps1 -TargetHost ExampleComputer -Module .\modules\Prefetch.ps1
 ```
 
 ### Utilities
 
 ``` PowerShell
-# Generate a quiver file using existing Active Directory OUs
-.\utils\AutoQuiver.ps1
-
 # Stack data from a CSV file.
 .\utils\DataStack.ps1 -File MYCSVFILE.csv -Target MYCOLNAME
 
