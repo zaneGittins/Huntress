@@ -76,7 +76,7 @@ function Write-Banner {
         yNNNNN-          
         `````` "      
                    
-    $Details = "`nAuthor: Zane Gittins`n Version Alpha 1.1`n"
+    $Details = "`nAuthor: Zane Gittins`n Version Alpha 1.0.1: Belted Kingfisher`n"
     Write-Host $Banner,$Details
 }
 
