@@ -15,7 +15,7 @@
         yNNNNN-
 ```
 
-PowerShell tool to enable blue teams to identify compromised systems and perform triages of important Windows artifacts. This project is similar, and some features are inspired by [Kansa](https://github.com/davehull/Kansa) as well as the SANS FOR508 course. One of the differentiators between Huntress and other projects is that Huntress integrates with LogRhythm to provide SOAR capabilities. All output is in CSV format.
+PowerShell tool to enable blue teams to identify compromised systems and perform triages of important Windows artifacts. This project is similar, and some features are inspired by [Kansa](https://github.com/davehull/Kansa) as well as the SANS FOR508 course.
 
 ## Requirements
 
