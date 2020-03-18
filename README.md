@@ -27,7 +27,7 @@ Huntress can be used to target a single host using the TargetHost parameter, or 
 
 ### Modules
 
-Modules are the PowerShell scripts that Huntress executes on remote hosts. Modules must return an array of objects. Modules must be placed in the modules directory.
+Modules are the PowerShell scripts that Huntress executes on remote hosts. Modules must return an array of objects.
 
 ``` PowerShell
 # Running the Connections module against a single host.
