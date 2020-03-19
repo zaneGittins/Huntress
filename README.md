@@ -1,20 +1,5 @@
 # Huntress
 
-```PowerShell
-             `ssyo:`
-            `s.  /y:
-            +.      y+
-    `.+yy+.+       -N`
-    sNMMMMd-....-://oM/  
-  :oyNMMMMmNNmdhhhs//N/  
-  +ssyNMMMMMs-.`     y+  
-      sMMMMMh:`     `m:  
-      .dNMMMy./-   .ys
-       odMMMN :o/yy:
-       `sMMMMs  .o:
-        yNNNNN-
-```
-
 PowerShell tool to enable blue teams to identify compromised systems and perform triages of important Windows artifacts. This project is similar, and some features are inspired by [Kansa](https://github.com/davehull/Kansa) as well as the SANS FOR508 course.
 
 [![asciicast](https://asciinema.org/a/q0SAt1Dmk181oYtLqnqHYjx2V.svg)](https://asciinema.org/a/q0SAt1Dmk181oYtLqnqHYjx2V)
