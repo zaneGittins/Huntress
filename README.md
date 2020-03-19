@@ -17,6 +17,8 @@
 
 PowerShell tool to enable blue teams to identify compromised systems and perform triages of important Windows artifacts. This project is similar, and some features are inspired by [Kansa](https://github.com/davehull/Kansa) as well as the SANS FOR508 course.
 
+[![asciicast](https://asciinema.org/a/q0SAt1Dmk181oYtLqnqHYjx2V.svg)](https://asciinema.org/a/q0SAt1Dmk181oYtLqnqHYjx2V)
+
 ## Requirements
 
 * PowerShell Version >= 5 on hosts and client. Some modules may work on PowerShell < 5, but this is untested.
