@@ -23,6 +23,7 @@ class Connection {
     [string]$ProcessName
     [string]$ImagePath
     [string]$ImageHash
+    [string]$Signature
 }
 
 $AllConn = Get-NetTCPConnection
@@ -41,6 +42,7 @@ foreach($ConnData in $AllConn) {
     $NewConnection.ProcessName      = $Process.Name 
     $NewConnection.ImagePath        = $Process.Path
     $NewConnection.ImageHash        = (Get-FileHash $Process.Path).Hash
+    $NewConnection.Signature        = (Get-AuthenticodeSignature $Process.Path).Status.ToString()
     $global:ReturnData += $NewConnection
 }
 
